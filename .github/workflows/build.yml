@@ -1,0 +1,30 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Descomprimir
+        run: unzip -q GastosVoz.zip
+      - name: Configurar AndroidX
+        run: |
+          echo "android.useAndroidX=true" >> GastosVoz/gradle.properties
+          echo "org.gradle.jvmargs=-Xmx2048m" >> GastosVoz/gradle.properties
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: 8.7
+      - name: Compilar
+        working-directory: GastosVoz
+        run: gradle assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: GastosVoz-apk
+          path: GastosVoz/app/build/outputs/apk/debug/app-debug.apk
